@@ -1,0 +1,5 @@
+/build
+/node_modules
+Book1.xlsx
+yarn.lock
+yarn-error.log

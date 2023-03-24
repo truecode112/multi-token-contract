@@ -1,0 +1,26 @@
+[
+  {
+    "name": "DiamondCutAndLoupeFacet",
+    "imple": "0x6E417088DC0A1952Afa0a106E54ee492B6E7558F"
+  },
+  {
+    "name": "MethodsExposureFacet",
+    "imple": "0x9e6E6b0e8017c5CB3A679E99Ca02e30a78A04746"
+  },
+  {
+    "name": "WBNB",
+    "imple": "0xae13d989dac2f0debff460ac112a837c89baa7cd"
+  },
+  {
+    "name": "PancakeFactory",
+    "imple": "0x41939fe2547f3140b90e056fb42af81d423435ad"
+  },
+  {
+    "name": "PancakeRouter",
+    "imple": "0x1Ed675D5e63314B760162A3D1Cae1803DCFC87C7"
+  },
+  {
+    "name": "Diamond",
+    "imple": "0x84e92622728581c5326b75a87A659C75337036e1"
+  }
+]
