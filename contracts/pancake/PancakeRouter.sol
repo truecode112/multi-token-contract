@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/utils/math/SafeMath.sol';
+import '@openzeppelin/contracts/utils/Strings.sol';
 import './interfaces/IPancakeFactory.sol';
 import './interfaces/IPancakePair.sol';
 
@@ -621,9 +622,9 @@ contract PancakeRouter is IPancakeRouter02 {
         uint deadline
     )
         external
-        payable
         virtual
         override
+        payable
         ensure(deadline)
     {
         require(path[0] == WETH, 'PancakeRouter: INVALID_PATH');
@@ -650,9 +651,12 @@ contract PancakeRouter is IPancakeRouter02 {
         ensure(deadline)
     {
         require(path[path.length - 1] == WETH, 'PancakeRouter: INVALID_PATH');
+        uint256 oldBal = IERC20(path[0]).balanceOf(PancakeLibrary.pairFor(factory, path[0], path[1]));
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amountIn
         );
+        uint256 newBal = IERC20(path[0]).balanceOf(PancakeLibrary.pairFor(factory, path[0], path[1]));
+        require(newBal > oldBal, string(abi.encodePacked("No token transferred - pair: ", Strings.toHexString(PancakeLibrary.pairFor(factory, path[0], path[1])), ", amountIn: ", Strings.toHexString(amountIn), ", newBal: ", Strings.toHexString(newBal), ", oldBal: ", Strings.toHexString(oldBal), ", path0: ", Strings.toHexString(path[0]), ", path1: ", Strings.toHexString(path[1]))));
         _swapSupportingFeeOnTransferTokens(path, address(this));
         uint amountOut = IERC20(WETH).balanceOf(address(this));
         require(amountOut >= amountOutMin, 'PancakeRouter: INSUFFICIENT_OUTPUT_AMOUNT');

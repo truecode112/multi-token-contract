@@ -299,4 +299,46 @@ contract MethodsExposureFacet is IDiamondCut, IDiamondLoupe, IERC20Upgradeable {
     function numTokensToSwap() external view returns (uint256) {
         return 0;
     }
+
+    // ==================== Vesting ==================== //
+    function getTotalAmountInVesting() public view returns (uint256) {
+        return 0;
+    }
+
+    function computeReleasableAmount(address _beneficiary)
+        external
+        view
+        returns (uint256)
+    {
+        return 0;
+    }
+
+    function getVestingSchedule(address _beneficiary)
+        external
+        view
+        returns (
+            bool initialized,
+            address beneficiary,
+            uint256 cliff,
+            uint256 start,
+            uint256 duration,
+            uint256 slicePeriodSeconds,
+            uint256 amountTotal,
+            uint256 released
+        )
+    {
+        return (false, address(0), 0, 0, 0, 0, 0, 0);
+    }
+
+    function release(address _beneficiary, uint256 _amount) external {}
+
+    function createVestingSchedule(
+        address _beneficiary,
+        uint256 _start,
+        uint256 _cliff,
+        uint256 _duration,
+        uint256 _slicePeriodSeconds,
+        uint256 _amount
+    ) external {}
+
 }

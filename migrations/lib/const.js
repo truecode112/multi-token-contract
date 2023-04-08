@@ -16,10 +16,12 @@ const MethodsExposureFacet = artifacts.require('MethodsExposureFacet')
 const HamachiFacet = artifacts.require('HamachiFacet')
 const WithOwnership = artifacts.require('WithOwnership')
 const WithReward = artifacts.require('WithReward')
+const Lotto = artifacts.require('Lotto')
+const MyToken = artifacts.require('MyToken')
 
 module.exports = {
     addressZero, bytes32Zero, maxUint256,
     WBNB, PancakeRouter, PancakeFactory, USDT,
-    Diamond, DiamondCutAndLoupeFacet, LibDiamond, MethodsExposureFacet, HamachiFacet, WithOwnership, WithReward
+    Diamond, DiamondCutAndLoupeFacet, LibDiamond, MethodsExposureFacet, HamachiFacet, Lotto, MyToken
     
 };

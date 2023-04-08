@@ -1,7 +1,9 @@
 const { setWeb3 } = require('./lib/deploy')
 const { deploy_localhost } = require('./lib/localhost')
 const { deploy_bsctestnet } = require('./lib/bsctestnet')
-const { deploy_goerli } = require('./lib/goerli')
+const { deploy_goerli } = require('./lib/goerli');
+const { deploy_mumbai } = require('./lib/mumbai');
+const { deploy_zksync_mainnet } = require('./lib/zksync_mainnet');
 
 module.exports = function (deployer, network, accounts) {
 
@@ -44,6 +46,10 @@ module.exports = function (deployer, network, accounts) {
       // 0x2C0D829bf475FE455944Dd60c8F4CE369d56d665 - 25%
       // fee 30000000000000000
       // router 0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506
+    } else if (network === 'mumbai') {
+      await deploy_mumbai(web3, deployer, [accounts[0]], {})
+    } else if (network === 'zksync_mainnet') {
+      await deploy_zksync_mainnet(web3, deployer, [accounts[0]], {})
     }
   })
 };

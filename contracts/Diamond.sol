@@ -20,8 +20,7 @@ contract Diamond {
         address defaultRouter,
         address defaultPair,
         address diamondCutAndLoupeFacetAddress,
-        address methodsExposureFacetAddress,
-        address withRewardFacetAddress
+        address methodsExposureFacetAddress
     ) payable {
         LibDiamond.setContractOwner(msg.sender);
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
@@ -73,7 +72,7 @@ contract Diamond {
         IPancakeRouter02 router = IPancakeRouter02(defaultRouter);
         address swapPair = IPancakeFactory(router.factory()).createPair(
             address(this),
-            router.WETH()
+            defaultPair
         );
         ds.lpPools[address(swapPair)] = true;
 

@@ -8,7 +8,6 @@ import {IPancakeRouter01, IPancakeRouter02} from "./pancake/PancakeRouter.sol";
 import "./ISwapRouter.sol";
 import "./IDividendPayingToken.sol";
 import "./IVestingSchedule.sol";
-import "./ICamelotRouter.sol";
 
 contract WithReward is
     WithStorage,
@@ -61,7 +60,7 @@ contract WithReward is
         );
         _grantRole(
             LibDiamond.EXCLUDED_FROM_REWARD_ROLE,
-            0x926C609Cb956b1463d964855D63a89cBBE3aC8c0
+            0x926C609Cb956b1463d964855D63a89cBBE3aC8c0 //Hamachi LP
         ); // locked liquidity
     }
 
@@ -102,6 +101,10 @@ contract WithReward is
 
     // ==================== Views ==================== //
 
+    function getRewardPerShare() public view returns (uint256) {
+        return _rs().magnifiedRewardPerShare;
+    }
+
     function getRewardToken()
         external
         view
@@ -121,6 +124,12 @@ contract WithReward is
 
     function isExcludedFromRewards(address account) public view returns (bool) {
         return hasRole(LibDiamond.EXCLUDED_FROM_REWARD_ROLE, account);
+    }
+
+    /// Gets the index of the last processed wallet
+    /// @return index The index of the last wallet that was paid rewards
+    function getLastProcessedIndex() external view returns (uint256 index) {
+        return _rs().lastProcessedIndex;
     }
 
     /// @return numHolders The number of reward tracking token holders
@@ -187,6 +196,32 @@ contract WithReward is
             return (account, -1, 0, 0, 0, 0, false);
         }
         return getRewardAccount(_rs().rewardHolders.keys[_index]);
+    }
+
+    // function getAccountAtIndex(uint256 _index)
+    //     external
+    //     view
+    //     returns (
+    //         address account,
+    //         int256 index,
+    //         int256 numInQueue,
+    //         uint256 withdrawableRewards,
+    //         uint256 totalRewards,
+    //         uint256 lastClaimTime,
+    //         uint256 nextClaimTime,
+    //         uint256 timeTillAutoClaim,
+    //         bool manualClaim
+    //     )
+    // {
+    //     return getRewardAccount(_rs().rewardHolders.keys[_index]);
+    // }
+
+    // ==================== Management ==================== //
+
+    function setRewardPerShare(
+        uint256 _newPerShare
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _rs().magnifiedRewardPerShare = _newPerShare;
     }
 
     // ==================== Management ==================== //
@@ -256,12 +291,30 @@ contract WithReward is
         _rs().manualClaim[msg.sender] = _manual;
     }
 
+    function overrideWithdrawnRewards(
+        address _owner,
+        uint256 newValue
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _rs().withdrawnReward[_owner] = newValue;
+    }
+
+    /// @param _new The new time (in seconds) needed between claims
+    /// @dev Must be between 3600 and 86400 seconds
+    function updateClaimTimeout(
+        uint32 _new
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (_new < 3600 || _new > 86400) revert InvalidClaimTime();
+        _rs().claimTimeout = _new;
+    }
+
     // ==================== Internal ==================== //
 
     // This function uses a set amount of gas to process rewards for as many wallets as it can
     function _processRewards() internal {
         uint256 gas = _ds().processingGas;
-        if (gas <= 0) return;
+        if (gas <= 0) {
+            return;
+        }
 
         uint256 numHolders = _rs().rewardHolders.keys.length;
         uint256 _lastProcessedIndex = _rs().lastProcessedIndex;
@@ -294,12 +347,12 @@ contract WithReward is
     function _setRewardBalance(address account, uint256 newBalance) internal {
         if (isExcludedFromRewards(account)) return;
 
-        (, , , , , , uint256 amountTotal, uint256 released) = IVestingSchedule(
-            _ds().vestingContract
-        ).getVestingSchedule(account);
-        if (amountTotal > 0) {
-            newBalance += amountTotal - released;
-        }
+        // (, , , , , , uint256 amountTotal, uint256 released) = IVestingSchedule(
+        //     _ds().vestingContract
+        // ).getVestingSchedule(account);
+        // if (amountTotal > 0) {
+        //     newBalance += amountTotal - released;
+        // }
 
         if (newBalance >= _rs().minRewardBalance) {
             _setBalance(account, newBalance);
@@ -363,8 +416,9 @@ contract WithReward is
         uint256 _expectedOutput
     ) internal {
         uint256 _withdrawableReward = withdrawableDividendOf(_owner);
-        if (_withdrawableReward <= 0) return;
-
+        if (_withdrawableReward <= 0) {
+            return;
+        }
         _rs().withdrawnReward[_owner] += _withdrawableReward;
         _rs().claimTimes[_owner] = block.timestamp;
 
@@ -380,21 +434,12 @@ contract WithReward is
                 _expectedOutput
             );
         } else {
-            bool isCamelot = rewardToken.router ==
-                address(0xc873fEcbd354f5A56E00E710B90EF4201db2448d);
-            isCamelot
-                ? _swapUsingCamelot(
-                    rewardToken,
-                    _withdrawableReward,
-                    _owner,
-                    _expectedOutput
-                )
-                : _swapUsingV2(
-                    rewardToken,
-                    _withdrawableReward,
-                    _owner,
-                    _expectedOutput
-                );
+            _swapUsingV2(
+                rewardToken,
+                _withdrawableReward,
+                _owner,
+                _expectedOutput
+            );
         }
     }
 
@@ -425,32 +470,6 @@ contract WithReward is
         _rs().rewardBalances[_owner] -= value;
     }
 
-    // =========== UNISWAP =========== //
-
-    function _swapUsingCamelot(
-        LibDiamond.RewardToken memory rewardToken,
-        uint256 _value,
-        address _owner,
-        uint256 _expectedOutput
-    ) internal {
-        try
-            ICamelotRouter(rewardToken.router)
-                .swapExactETHForTokensSupportingFeeOnTransferTokens{
-                value: _value
-            }(
-                _expectedOutput,
-                rewardToken.path,
-                _owner,
-                address(0),
-                block.timestamp
-            )
-        {
-            emit RewardProcessed(_owner, _value, rewardToken.token);
-        } catch {
-            _rs().withdrawnReward[_owner] -= _value;
-        }
-    }
-
     function _swapUsingV2(
         LibDiamond.RewardToken memory rewardToken,
         uint256 _value,
@@ -458,10 +477,7 @@ contract WithReward is
         uint256 _expectedOutput
     ) internal {
         try
-            IPancakeRouter02(rewardToken.router)
-                .swapExactETHForTokensSupportingFeeOnTransferTokens{
-                value: _value
-            }(_expectedOutput, rewardToken.path, _owner, block.timestamp)
+            IPancakeRouter02(rewardToken.router).swapExactETHForTokensSupportingFeeOnTransferTokens{value: _value}(_expectedOutput, rewardToken.path, _owner, block.timestamp)
         {
             emit RewardProcessed(_owner, _value, rewardToken.token);
         } catch {

@@ -27,128 +27,121 @@ contract HamachiFacet is WithReward, WithOwnership, ERC20Upgradeable {
 
         __WithReward_init();
         __ERC20_init("Hamachi", "HAMI");
-        _mint(_msgSender(), 50_000_000_000 * (10**18));
-
+        _mint(_msgSender(), 50_000_000_000 * (10 ** 18));
         _grantRole(
             LibDiamond.EXCLUDED_FROM_MAX_WALLET_ROLE,
             _ds().defaultRouter
         );
     }
 
+    function burn(
+        address owner,
+        uint256 amount
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _burn(owner, amount);
+    }
     // ==================== Management ==================== //
 
-    function setLiquidityWallet(address _liquidityWallet)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setLiquidityWallet(
+        address _liquidityWallet
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().liquidityWallet = _liquidityWallet;
     }
 
-    function setBuyFee(uint32 _liquidityBuyFee, uint32 _rewardBuyFee)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setBuyFee(
+        uint32 _liquidityBuyFee,
+        uint32 _rewardBuyFee
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().fee.liquidityBuyFee = _liquidityBuyFee;
         _ds().fee.rewardBuyFee = _rewardBuyFee;
     }
 
-    function setSellFee(uint32 _liquiditySellFee, uint32 _rewardSellFee)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setSellFee(
+        uint32 _liquiditySellFee,
+        uint32 _rewardSellFee
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().fee.liquiditySellFee = _liquiditySellFee;
         _ds().fee.rewardSellFee = _rewardSellFee;
     }
 
-    function setIsLpPool(address _pairAddress, bool _isLp)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setIsLpPool(
+        address _pairAddress,
+        bool _isLp
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().lpPools[_pairAddress] = _isLp;
     }
 
-    function setNumTokensToSwap(uint256 _amount)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setNumTokensToSwap(
+        uint256 _amount
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().numTokensToSwap = _amount;
     }
 
-    function setProcessingGas(uint32 _gas)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setProcessingGas(
+        uint32 _gas
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().processingGas = _gas;
     }
 
-    function setSwapRouter(address _routerAddress, bool _isRouter)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setSwapRouter(
+        address _routerAddress,
+        bool _isRouter
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().swapRouters[_routerAddress] = _isRouter;
     }
 
-    function setDefaultRouter(address _router)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setDefaultRouter(
+        address _router
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().defaultRouter = _router;
         _grantRole(LibDiamond.EXCLUDED_FROM_MAX_WALLET_ROLE, _router);
     }
 
-    function setDefaultAdminRole(address user)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setDefaultAdminRole(
+        address user
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(DEFAULT_ADMIN_ROLE, user);
     }
 
-    function setImplementation(address _newImplementation)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setImplementation(
+        address _newImplementation
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().methodsExposureFacetAddress = _newImplementation;
     }
 
-    function setMaxTokenPerWallet(uint256 _maxTokenPerWallet)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setMaxTokenPerWallet(
+        uint256 _maxTokenPerWallet
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().maxTokenPerWallet = _maxTokenPerWallet;
     }
 
-    function excludeFromFee(address _account)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function excludeFromFee(
+        address _account
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(LibDiamond.EXCLUDED_FROM_FEE_ROLE, _account);
     }
 
-    function excludeFromMaxWallet(address _account)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function excludeFromMaxWallet(
+        address _account
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(LibDiamond.EXCLUDED_FROM_MAX_WALLET_ROLE, _account);
     }
 
-    function setProcessRewards(bool _process)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setProcessRewards(
+        bool _process
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().processRewards = _process;
     }
 
-    function setProcessFeeRole(address _account)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setProcessFeeRole(
+        address _account
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(LibDiamond.PROCESS_FEE_ROLE, _account);
     }
 
-    function setVestingContract(address _vestingContract)
-        external
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setVestingContract(
+        address _vestingContract
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _ds().vestingContract = _vestingContract;
     }
 
@@ -200,6 +193,10 @@ contract HamachiFacet is WithReward, WithOwnership, ERC20Upgradeable {
 
     function isExcludedFromFee(address account) public view returns (bool) {
         return hasRole(LibDiamond.EXCLUDED_FROM_FEE_ROLE, account);
+    }
+
+    function hasProcessFeeRole(address account) external view returns (bool) {
+        return hasRole(LibDiamond.PROCESS_FEE_ROLE, account);
     }
 
     function isExcludedMaxWallet(address account) external view returns (bool) {
@@ -254,13 +251,18 @@ contract HamachiFacet is WithReward, WithOwnership, ERC20Upgradeable {
         if (isSell && !processingFees && _ds().processRewards) {
             _processRewards();
         }
+
+        if (!_ds().lpPools[to] && !_ds().lpPools[from]) {
+            if (balanceOf(address(this)) >= _ds().numTokensToSwap) {
+                _processFees(_ds().numTokensToSwap);
+            }
+        }
     }
 
-    function _determineFee(address from, address to)
-        internal
-        view
-        returns (uint32, bool)
-    {
+    function _determineFee(
+        address from,
+        address to
+    ) internal view returns (uint32, bool) {
         if (
             _ds().lpPools[to] &&
             !isExcludedFromFee(from) &&

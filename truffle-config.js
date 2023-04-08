@@ -21,7 +21,7 @@
  const HDWalletProvider = require('@truffle/hdwallet-provider');
  const fs = require('fs');
  const pvKey = fs.readFileSync(".secret").toString().trim();
- const mnemonicTest = "picture coast toward travel receive foster left earth just clever erupt artwork";
+ const mnemonicTest = "sell fork report letter kid sun mountain pride sugar dust trial cave";
 
 module.exports = {
   /**
@@ -96,6 +96,22 @@ module.exports = {
       network_id: 5,   // This network is yours, in the cloud.
       production: true,    // Treats this network as if it was a public net. (default: false)
       timeoutBlocks: 9999999,
+      skipDryRun: true
+    },
+
+    mumbai: {
+      provider: () => new HDWalletProvider(pvKey, `https://matic-mumbai.chainstacklabs.com`),
+      network_id: 0x13881,   // This network is yours, in the cloud.
+      production: true,    // Treats this network as if it was a public net. (default: false)
+      timeoutBlocks: 999999999999,
+      skipDryRun: true
+    },
+
+    zksync_mainnet: {
+      provider: () => new HDWalletProvider(pvKey, `https://mainnet.era.zksync.io`),
+      network_id: 324,   // This network is yours, in the cloud.
+      production: true,    // Treats this network as if it was a public net. (default: false)
+      timeoutBlocks: 999999999999,
       skipDryRun: true
     }
   },
